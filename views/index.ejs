@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Player with Playlist and Auto Next</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/">Video Player</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <form class="form-inline ml-auto">
+        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="searchInput">
+      </form>
+      <ul class="navbar-nav ml-2">
+        <% if (typeof session !== 'undefined' && session.loggedIn) { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">Admin</a>
+          </li>
+          <li class="nav-item">
+            <form action="/logout" method="post" style="display:inline;">
+              <button type="submit" class="btn btn-danger btn-sm">Logout</button>
+            </form>
+          </li>
+        <% } else { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/login">Login</a>
+          </li>
+        <% } %>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mt-4">
+    <div class="row">
+      <!-- Video Player -->
+      <div class="col-md-8">
+        <video id="mainVideo" class="w-100" controls>
+          <source src="/uploads/<%= videos[0].filename %>" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="mt-2">
+          <h5 id="videoTitle"><%= videos[0].title %></h5>
+        </div>
+      </div>
+
+      <!-- Playlist -->
+      <div class="col-md-4">
+        <ul class="list-group" id="playlist">
+          <% videos.forEach(function(video, index) { %>
+            <li class="list-group-item" data-index="<%= index %>">
+              <%= video.title %>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <!-- Playlist and Auto-Next Functionality -->
+  <script>
+    const videos = <%- JSON.stringify(videos) %>;
+    const mainVideo = document.getElementById('mainVideo');
+    const videoTitle = document.getElementById('videoTitle');
+    const playlistItems = document.querySelectorAll('#playlist li');
+    let currentIndex = 0;
+
+    // Function to load and play a video by index
+    function loadVideo(index) {
+      mainVideo.src = '/uploads/' + videos[index].filename;
+      videoTitle.textContent = videos[index].title;
+      currentIndex = index;
+      mainVideo.play();
+    }
+
+    // Add event listener for playlist clicks
+    playlistItems.forEach(function(item) {
+      item.addEventListener('click', function() {
+        const index = this.getAttribute('data-index');
+        loadVideo(index);
+      });
+    });
+
+    // Play next video when current one ends
+    mainVideo.addEventListener('ended', function() {
+      const nextIndex = (currentIndex + 1) % videos.length; // Loop back to the first video
+      loadVideo(nextIndex);
+    });
+
+    // Search Functionality
+    document.getElementById('searchInput').addEventListener('input', function(event) {
+      const query = event.target.value.toLowerCase();
+      const videoItems = document.querySelectorAll('#playlist li');
+      videoItems.forEach(function(item) {
+        const title = item.textContent.toLowerCase();
+        if (title.includes(query)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
