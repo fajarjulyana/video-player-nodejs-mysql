@@ -6,11 +6,50 @@
   <title>Video Player with Playlist and Auto Next</title>
   <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- CSS for active video in playlist -->
+  <style>
+    body {
+      background-color: #343a40; /* Background gelap untuk seluruh halaman */
+      color: #f8f9fa; /* Warna teks terang */
+    }
+
+    .navbar {
+      background-color: #212529; /* Warna navbar gelap */
+    }
+
+    .navbar-brand, .nav-link, .form-control {
+      color: #f8f9fa; /* Warna teks di navbar */
+    }
+
+    .form-control {
+      background-color: #495057; /* Warna background untuk input pencarian */
+      border: none;
+    }
+
+    .list-group-item {
+      background-color: #495057; /* Background untuk list video */
+      color: #f8f9fa; /* Warna teks untuk list video */
+    }
+
+    .list-group-item.playing {
+      background-color: #007bff; /* Warna saat video sedang diputar */
+      font-weight: bold; /* Membuat teks lebih tebal */
+    }
+
+    .btn-danger {
+      background-color: #dc3545; /* Warna tombol logout */
+    }
+
+    video {
+      background-color: #000; /* Background video player */
+    }
+  </style>
 </head>
 <body>
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark">
     <a class="navbar-brand" href="/">Video Player</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -80,8 +119,19 @@
 
     // Function to load and play a video by index
     function loadVideo(index) {
+      // Update the video source and title
       mainVideo.src = '/uploads/' + videos[index].filename;
       videoTitle.textContent = videos[index].title;
+
+      // Remove the "playing" class from all playlist items
+      playlistItems.forEach(function(item) {
+        item.classList.remove('playing');
+      });
+
+      // Add the "playing" class to the current playlist item
+      playlistItems[index].classList.add('playing');
+
+      // Play the video
       currentIndex = index;
       mainVideo.play();
     }
@@ -99,6 +149,9 @@
       const nextIndex = (currentIndex + 1) % videos.length; // Loop back to the first video
       loadVideo(nextIndex);
     });
+
+    // Initialize by marking the first video as "playing"
+    playlistItems[0].classList.add('playing');
 
     // Search Functionality
     document.getElementById('searchInput').addEventListener('input', function(event) {
